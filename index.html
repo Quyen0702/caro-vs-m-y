@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cờ Caro với Máy</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background: #f9f9f9;
+        padding-top: 40px;
+      }
+      h1 {
+        margin-bottom: 20px;
+      }
+      #board {
+        display: grid;
+        grid-template-columns: repeat(3, 100px);
+        grid-gap: 5px;
+        justify-content: center;
+        margin: 0 auto 20px;
+      }
+      .cell {
+        width: 100px;
+        height: 100px;
+        font-size: 36px;
+        background-color: #fff;
+        border: 2px solid #444;
+        cursor: pointer;
+      }
+      .cell:disabled {
+        background-color: #ddd;
+        cursor: default;
+      }
+      #message {
+        font-size: 20px;
+        margin-bottom: 20px;
+      }
+      #reset {
+        padding: 10px 20px;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Người vs Máy - Cờ Caro</h1>
+    <div id="message">Lượt của bạn (X)</div>
+    <div id="board"></div>
+    <button id="reset">Chơi lại</button>
+
+    <script>
+      const board = document.getElementById("board");
+      const message = document.getElementById("message");
+      const resetBtn = document.getElementById("reset");
+      let cells = [];
+      let gameOver = false;
+
+      function createBoard() {
+        board.innerHTML = "";
+        cells = [];
+        gameOver = false;
+        message.textContent = "Lượt của bạn (X)";
+        for (let i = 0; i < 9; i++) {
+          const cell = document.createElement("button");
+          cell.className = "cell";
+          cell.addEventListener("click", () => playerMove(i));
+          board.appendChild(cell);
+          cells.push(cell);
+        }
+      }
+
+      function playerMove(index) {
+        if (gameOver || cells[index].textContent !== "") return;
+
+        cells[index].textContent = "X";
+        cells[index].disabled = true;
+
+        if (checkWin("X")) {
+          message.textContent = "Bạn thắng!";
+          gameOver = true;
+          return;
+        }
+
+        if (isBoardFull()) {
+          message.textContent = "Hòa!";
+          gameOver = true;
+          return;
+        }
+
+        message.textContent = "Lượt của máy (O)";
+        setTimeout(computerMove, 500); // máy đánh sau 0.5 giây
+      }
+
+      function computerMove() {
+        if (gameOver) return;
+        let emptyIndexes = cells
+          .map((cell, index) => (cell.textContent === "" ? index : null))
+          .filter((index) => index !== null);
+
+        if (emptyIndexes.length === 0) return;
+
+        // Đánh ngẫu nhiên
+        let randomIndex =
+          emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+        cells[randomIndex].textContent = "O";
+        cells[randomIndex].disabled = true;
+
+        if (checkWin("O")) {
+          message.textContent = "Máy thắng!";
+          gameOver = true;
+          return;
+        }
+
+        if (isBoardFull()) {
+          message.textContent = "Hòa!";
+          gameOver = true;
+          return;
+        }
+
+        message.textContent = "Lượt của bạn (X)";
+      }
+
+      function checkWin(player) {
+        const winPatterns = [
+          [0, 1, 2],
+          [3, 4, 5],
+          [6, 7, 8],
+          [0, 3, 6],
+          [1, 4, 7],
+          [2, 5, 8],
+          [0, 4, 8],
+          [2, 4, 6],
+        ];
+        return winPatterns.some((pattern) => {
+          const [a, b, c] = pattern;
+          return (
+            cells[a].textContent === player &&
+            cells[b].textContent === player &&
+            cells[c].textContent === player
+          );
+        });
+      }
+
+      function isBoardFull() {
+        return cells.every((cell) => cell.textContent !== "");
+      }
+
+      resetBtn.addEventListener("click", createBoard);
+      createBoard();
+    </script>
+  </body>
+</html>
